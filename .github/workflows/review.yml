@@ -86,7 +86,7 @@ jobs:
       - name: 运行分析脚本并同时提交 backtest_csv 和 review_csv 到 qlib_score 分支
         run: |
           echo ">>> 运行分析脚本..."
-          cd ./roll && python ./roll.py model review
+          cd ./roll && python ./roll.py model backtest
           cd ..
 
           # 回到仓库根目录
