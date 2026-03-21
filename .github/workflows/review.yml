@@ -92,11 +92,21 @@ jobs:
           # 回到仓库根目录
           cd "$(git rev-parse --show-toplevel)"
 
+          # backtest 实际写入仓库根目录 backtest_csv/（见 roll/model_review.py）。
+          # 在 main 上这些文件多为未跟踪；qlib_score 若跟踪同名路径，直接 checkout 会报
+          # "untracked working tree files would be overwritten"。先备份再删除目录再切换分支。
+          CI_BT_DIR="${RUNNER_TEMP:-/tmp}/ci_backtest_csv"
+          mkdir -p "$CI_BT_DIR"
+          if [ -d backtest_csv ]; then
+            cp backtest_csv/*.csv "$CI_BT_DIR/" 2>/dev/null || true
+          fi
+          rm -rf backtest_csv
+
           # 拉取 qlib_score 分支最新内容
           git fetch origin qlib_score
 
           # 检出并切换到本地 qlib_score 分支，若不存在则新建追踪远程分支
-          if git branch --list qlib_score; then
+          if git show-ref --verify --quiet refs/heads/qlib_score; then
             git checkout qlib_score
           else
             git checkout -b qlib_score origin/qlib_score
@@ -109,7 +119,8 @@ jobs:
           mkdir -p backtest_csv
           mkdir -p review_csv
 
-          # 从 roll/backtest_csv 复制 *.csv 文件到根目录下的 backtest_csv
+          # 恢复本次回测生成的 CSV（主路径）；兼容 roll/backtest_csv
+          cp "$CI_BT_DIR"/*.csv backtest_csv/ 2>/dev/null || true
           if [ -d "roll/backtest_csv" ]; then
             cp roll/backtest_csv/*.csv backtest_csv/ 2>/dev/null || true
           fi
