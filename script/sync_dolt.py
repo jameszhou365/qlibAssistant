@@ -529,7 +529,8 @@ def push_merged_backtest_csvs_to_table(
 ) -> None:
     """将多个 backtest CSV 合并后 push 到指定 Dolt 表（整表覆盖，逻辑同 push_table_from_csv）。"""
     if not paths:
-        raise DoltHubSqlError(f"{label}: 没有匹配的 CSV 文件")
+        print(f"⚠️ {label}: 没有匹配的 CSV 文件，已跳过。")
+        return
     tmp, n = _merge_backtest_csvs_to_tempfile(paths)
     try:
         print(
@@ -595,9 +596,8 @@ def push_backtest_csvs_by_name_rule(
         )
 
     if not paths:
-        raise DoltHubSqlError(
-            "没有可提交的 backtest CSV（检查目录或 filter 规则）",
-        )
+        print("⚠️ 没有可提交的 backtest CSV（检查目录或 filter 规则），已跳过。")
+        return
 
     mode = "文件名含 filter" if name_contains_filter else "文件名不含 filter"
     push_merged_backtest_csvs_to_table(
@@ -657,7 +657,8 @@ def push_merged_review_csvs_to_table(
     将多个本地 CSV 合并后 push 到指定 Dolt 表（整表覆盖，逻辑同 push_table_from_csv）。
     """
     if not paths:
-        raise DoltHubSqlError(f"{label}: 没有匹配的 CSV 文件")
+        print(f"⚠️ {label}: 没有匹配的 CSV 文件，已跳过。")
+        return
     tmp, n = _merge_review_csvs_to_tempfile(paths)
     try:
         print(
@@ -732,9 +733,8 @@ def push_csv_group_by_name_rule(
         paths = [p for p in paths if os.path.basename(p).lower() not in ex]
 
     if not paths:
-        raise DoltHubSqlError(
-            "没有可提交的 CSV 文件（检查目录、filter 规则或排除列表）",
-        )
+        print("⚠️ 没有可提交的 CSV 文件（检查目录、filter 规则或排除列表），已跳过。")
+        return
 
     mode = "文件名含 filter" if name_contains_filter else "文件名不含 filter"
     depth = "（递归子目录）" if recursive else ""
